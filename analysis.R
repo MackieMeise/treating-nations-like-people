@@ -31,6 +31,7 @@ library(showtext)
 library(interplot)
 library(marginaleffects)
 library(DescTools)
+library(margins)
 
 #### LOAD DATA FILE ####
 load("data/data.rda")
@@ -542,6 +543,23 @@ mo7 <- convertModel(m7)
 screenreg(list(mo1, mo2, mo3, mo4, mo5, mo6, mo7))
 coefnames <- c("Intercept", "Attributed responsibility of recipients", "Gender (1: Woman)", "Age (35-54)", "Age (55-70)", "Education (upper secondary)", "Education (up to lower secondary)", "Income (Coping)", "Income (difficult on present income)", "Income (very difficult on present income)", "Political self-placement", "Immigration stance", "Proud to be European citizen", "Concern for others", "GNI", "Welfare state effectiveness", "Attributed responsibility x Concern for others", "Attributed responsibility x GNI", "Attributed responsibility x Welfare state effectiveness")
 htmlreg(list(mo1, mo2, mo3, mo4, mo5, mo6, mo7), file="regtable_i3.doc", single.row=T, stars=0.01, custom.coef.names = coefnames)
+
+## calculate marginal effects ----
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                      weights = dfi[[i]]$PESO_TOT, 
+                      data=dfi[[i]], 
+                      family="binomial",
+                      cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=df))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+AME2 <- as.data.frame(t(AME))
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin <- as.data.frame(cbind(mame,mse))
 
 ## runs diagnostic tests ----
 # linearity assumption
