@@ -153,7 +153,7 @@ pl1 <- ggplot(data = p,aes(x=reorder(country, -order), y=prop, fill=crisman, lab
   scale_fill_brewer(type = "div", palette = "Greys", direction= -1) +
   geom_text(position=position_stack(vjust=0.5), aes(colour=ifelse(crisman=="Strongly disagree" | crisman=="Somewhat disagree","black","white")), family="serif") +
   scale_colour_manual(values=c("black", "lightgrey"), guide="none") + 
-  labs(subtitle="During the crisis some member states have done better than others (e.g. in terms of\nunemployment, poverty or growth rates). Please indicate to what extent do you\nagree with the following statements: Weaker member states have mismanaged\ntheir economy andpublic finances.", 
+  labs(subtitle="During the crisis some member states have done better than others (e.g. in terms of\nunemployment, poverty or growth rates). Please indicate to what extent do you\nagree with the following statements: Weaker member states have mismanaged\ntheir economy and public finances.", 
        y="Share of respondents", 
        x="") +
   geom_hline(yintercept=0, colour="grey") +
@@ -182,7 +182,7 @@ pl2 <- ggplot(data = py,aes(x=reorder(country, -order), y=prop, fill=crisman, la
 
 finalp <- grid.arrange(arrangeGrob(pl1, nrow=1, ncol=1),
                        arrangeGrob(pl2, nrow=1, ncol=1), heights=(c(5,1)))
-ggsave("crisman_bw.png", finalp, width=160, height=110, units="mm")
+ggsave("figures/crisman_bw.png", finalp, width=160, height=110, units="mm")
 
 # calculate means, medians and standard deviation for the whole sample and by country
 df_f <- filter(df, crisman_n<5) 
@@ -366,13 +366,13 @@ screenreg(list(model1,model2, model3, model4, model5, model6, model7))
 htmlreg(list(model1, model2, model3, model4, model5, model6, model7), file="regtable_p2.doc", single.row=T, stars=0.01)
 
 # calculating R²
-r2 <- with(summary(model1$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model2$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model3$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model4$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model5$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model6$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model7$glm_res), 1 - deviance/null.deviance)
+r2 <- with(summary(model1$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2 <- with(summary(model2$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2 <- with(summary(model3$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2 <- with(summary(model4$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2 <- with(summary(model5$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2 <- with(summary(model6$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2 <- with(summary(model7$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
 
 # LRT for the interaction effects
 anova(model7$glm_res, model6$glm_res, test="LRT")
@@ -424,13 +424,13 @@ screenreg(list(model1a,model2a, model3a, model4a, model5a, model6a, model7a))
 htmlreg(list(model1a, model2a, model3a, model4a, model5a, model6a, model7a), file="regtable_a_p2.doc", single.row=T, stars=0.01, custom.coef.names = coefnames)
 
 # calculating R²
-r2 <- with(summary(model1a$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model2a$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model3a$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model4a$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model5a$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model6a$glm_res), 1 - deviance/null.deviance)
-r2 <- with(summary(model7a$glm_res), 1 - deviance/null.deviance)
+r2_a1 <- with(summary(model1a$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2_a2 <- with(summary(model2a$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2_a3 <- with(summary(model3a$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2_a4 <- with(summary(model4a$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2_a5 <- with(summary(model5a$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2_a6 <- with(summary(model6a$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
+r2_a7 <- with(summary(model7a$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
 
 
 ## start imputing missing values ----
@@ -501,7 +501,7 @@ custom_pooling <- function(formula) {
   
   aic <- extractAIC(model$glm_res)[2]
   LL <- logLik(model$glm_res)
-  r2 <- with(summary(model$glm_res), 1 - deviance/null.deviance)
+  r2 <- with(summary(model$glm_res), 1 - (deviance - length(coefficients))/null.deviance)
   n <- nobs(model$glm_res)
   imputations <- "5"
   
@@ -556,10 +556,45 @@ for (i in seq(1:5)) {
   AME <- cbind(AME, summary(mar_cl)[,2])
   SE <- cbind(SE, summary(mar_cl)[,3])
 }
-AME2 <- as.data.frame(t(AME))
+
 mame <- apply(AME, 1, mean)
 mse <- apply(SE, 1, mean)
 margin <- as.data.frame(cbind(mame,mse))
+
+# for attrep=1
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,crisman_d=="1")))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin_1 <- as.data.frame(cbind(mame,mse))
+
+# for attrep=0
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,crisman_d=="0")))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin_0 <- as.data.frame(cbind(mame,mse))
+
 
 ## runs diagnostic tests ----
 # linearity assumption
