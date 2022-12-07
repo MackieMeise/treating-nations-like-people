@@ -32,6 +32,7 @@ library(interplot)
 library(marginaleffects)
 library(DescTools)
 library(margins)
+library(MASS)
 
 #### LOAD DATA FILE ####
 load("data/data.rda")
@@ -595,7 +596,34 @@ mame <- apply(AME, 1, mean)
 mse <- apply(SE, 1, mean)
 margin_0 <- as.data.frame(cbind(mame,mse))
 
+## calculate ordinal regression as robustness test ----
+df_ord <- filter(df, fiscsol!="Don't know")
+df_ord$fiscsol <- droplevels(df_ord$fiscsol)
+m_ord_1 <- polr(fiscsol ~ crisman_d + gender + age_class + edu + inc + polpos, 
+                data=df_ord, 
+                weights=df_ord$PESO_TOT,
+                Hess = TRUE)
+m_ord_2 <- polr(fiscsol ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos, 
+                data=df_ord, 
+                weights=df_ord$PESO_TOT,
+                Hess = TRUE)
 
+m_ord_3 <- polr(fiscsol ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff, 
+                data=df_ord, 
+                weights=df_ord$PESO_TOT,
+                Hess = TRUE)
+m_ord_4 <- polr(fiscsol ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*wsdiff + crisman_d*gni + crisman_d*conoth, 
+                data=df_ord, 
+                weights=df_ord$PESO_TOT,
+                Hess = TRUE)
+
+coeftest(m_ord_1, vcov=vcovCL(m_ord_1, factor(df_ord$country)))
+coeftest(m_ord_2, vcov=vcovCL(m_ord_2, factor(df_ord$country)))
+coeftest(m_ord_3, vcov=vcovCL(m_ord_3, factor(df_ord$country)))
+coeftest(m_ord_4, vcov=vcovCL(m_ord_4, factor(df_ord$country)))
+screenreg(list(m_ord_1, m_ord_2, m_ord_3, m_ord_4))
+
+plot_model(m_ord_4, type="emm", terms=c("gni","crisman_d"))
 ## runs diagnostic tests ----
 # linearity assumption
 
