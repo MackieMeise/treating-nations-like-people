@@ -60,7 +60,7 @@ p <- p %>% mutate(prop=ifelse(fiscsol=="Somewhat disagree" | fiscsol=="Strongly 
 
 pl1 <- ggplot(data = p,aes(x=reorder(country, -order), y=prop, fill=fiscsol, label=paste(as.character(abs(round(100*prop,0))), "%", sep=""))) + 
   geom_bar(stat = "identity") +
-  scale_fill_brewer(type = "div", palette = "Greys", direction= -1) +
+  scale_fill_manual(values = c("Strongly agree" = "gray10", "Somewhat agree" = "gray40", "Somewhat disagree" = "gray85", "Strongly disagree" = "gray60")) +
   geom_text(position=position_stack(vjust=0.5), aes(colour=ifelse(fiscsol=="Strongly disagree" | fiscsol=="Somewhat disagree","black","white")), family="serif") +
   scale_colour_manual(values=c("black", "lightgrey"), guide="none") + 
   labs(subtitle="All EU Member States, including (COUNTRY), should contribute to a common EU\nfund to help any other Member State facing potential severe economic and financial\ndifficulties in times of crisis.", 
@@ -81,8 +81,7 @@ py <- left_join(p3, p2)
 pl2 <- ggplot(data = py,aes(x=reorder(country, -order), y=prop, fill=fiscsol, label=paste(as.character(round(100*prop,0)), "%", sep=""))) + 
   geom_bar(stat = "identity", fill="grey") +
   geom_text(position=position_stack(vjust=0.5), family="serif") +
-  labs(subtitle="Share of Don't know responses",
-       y="", 
+  labs(y="% DK", 
        x="") +
   geom_hline(yintercept=0, colour="grey") +
   theme_pubclean() +
@@ -93,7 +92,7 @@ pl2 <- ggplot(data = py,aes(x=reorder(country, -order), y=prop, fill=fiscsol, la
 
 finalp <- grid.arrange(arrangeGrob(pl1, nrow=1, ncol=1),
                        arrangeGrob(pl2, nrow=1, ncol=1), heights=(c(5,1)))
-ggsave("fiscsoleu3_bw.png", finalp, width=160, height=110, units="mm")
+ggsave("figures/fiscsoleu3_bw.png", finalp, width=160, height=110, units="mm")
 
 # calculate means, medians and standard deviation for the whole sample and by country
 df_f <- filter(df, fiscsol_n<5) 
@@ -151,9 +150,9 @@ p <- p %>% mutate(prop=ifelse(crisman=="Somewhat disagree" | crisman=="Strongly 
 
 pl1 <- ggplot(data = p,aes(x=reorder(country, -order), y=prop, fill=crisman, label=paste(as.character(abs(round(100*prop,0))), "%", sep=""))) + 
   geom_bar(stat = "identity") +
-  scale_fill_brewer(type = "div", palette = "Greys", direction= -1) +
+  scale_fill_manual(values = c("Strongly agree" = "gray10", "Somewhat agree" = "gray40", "Somewhat disagree" = "gray85", "Strongly disagree" = "gray60")) +
   geom_text(position=position_stack(vjust=0.5), aes(colour=ifelse(crisman=="Strongly disagree" | crisman=="Somewhat disagree","black","white")), family="serif") +
-  scale_colour_manual(values=c("black", "lightgrey"), guide="none") + 
+  scale_colour_manual(values=c("black", "lightgray"), guide="none") + 
   labs(subtitle="During the crisis some member states have done better than others (e.g. in terms of\nunemployment, poverty or growth rates). Please indicate to what extent do you\nagree with the following statements: Weaker member states have mismanaged\ntheir economy and public finances.", 
        y="Share of respondents", 
        x="") +
