@@ -214,7 +214,7 @@ geodata0 <- gisco_get_countries()
 # create grouped datafame
 reggrp <- filter(df, fiscsol_n<5) %>%
   group_by(NUTS_ID) %>%
-  summarize(fiscsol = mean(fiscsol_d), count=n(), landb=mean(landb), lang = mean (lang), country= country)
+  summarize(fiscsol = mean(as.numeric(as.character(fiscsol_d)), na.rm=T), count=n(), landb=mean(landb), lang = mean (lang), country= country)
 
 # join the two
 mapdata3 <- left_join(geodata3, reggrp, by="NUTS_ID")
@@ -561,7 +561,7 @@ mame <- apply(AME, 1, mean)
 mse <- apply(SE, 1, mean)
 margin <- as.data.frame(cbind(mame,mse))
 
-# for attrep=1
+# for conoth=1
 AME <- SE <- NULL
 for (i in seq(1:5)) {
   model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
@@ -569,7 +569,7 @@ for (i in seq(1:5)) {
                             data=dfi[[i]], 
                             family="binomial",
                             cluster=dfi[[i]]$country) 
-  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,crisman_d=="1")))
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,conoth=="1")))
   AME <- cbind(AME, summary(mar_cl)[,2])
   SE <- cbind(SE, summary(mar_cl)[,3])
 }
@@ -578,7 +578,7 @@ mame <- apply(AME, 1, mean)
 mse <- apply(SE, 1, mean)
 margin_1 <- as.data.frame(cbind(mame,mse))
 
-# for attrep=0
+# for conoth=0
 AME <- SE <- NULL
 for (i in seq(1:5)) {
   model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
@@ -586,7 +586,7 @@ for (i in seq(1:5)) {
                             data=dfi[[i]], 
                             family="binomial",
                             cluster=dfi[[i]]$country) 
-  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,crisman_d=="0")))
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,conoth=="0")))
   AME <- cbind(AME, summary(mar_cl)[,2])
   SE <- cbind(SE, summary(mar_cl)[,3])
 }
@@ -594,6 +594,122 @@ for (i in seq(1:5)) {
 mame <- apply(AME, 1, mean)
 mse <- apply(SE, 1, mean)
 margin_0 <- as.data.frame(cbind(mame,mse))
+
+#calculate tertiles of gni
+tertiles <- df %>%
+  mutate(tertiles = ntile(gni, 3)) %>%
+  mutate(tertiles = if_else(tertiles == 1, 'Low', if_else(tertiles == 2, 'Medium', 'High'))) %>%
+  arrange(gni)
+
+# for gni>0.7
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,gni>=0.7)))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin <- as.data.frame(cbind(mame,mse))
+margin
+
+# for gni<0.7 & >0.4
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,gni<=0.7 & gni>0.4)))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin <- as.data.frame(cbind(mame,mse))
+
+# for gni<0.4
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,gni<=0.4)))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin <- as.data.frame(cbind(mame,mse))
+
+
+#calculate tertiles of wse
+tertiles <- df %>%
+  mutate(tertiles = ntile(wsdiff, 3)) %>%
+  mutate(tertiles = if_else(tertiles == 1, 'Low', if_else(tertiles == 2, 'Medium', 'High'))) %>%
+  arrange(gni)
+
+# for wse>70.2
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,wsdiff>70.2)))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin <- as.data.frame(cbind(mame,mse))
+
+# for wse<=70.2 & > 64.6
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,wsdiff<=70.2 & wsdiff> 64.6)))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin <- as.data.frame(cbind(mame,mse))
+
+# for wse< 64.6
+AME <- SE <- NULL
+for (i in seq(1:5)) {
+  model_marg <- glm.cluster(fiscsol_d ~ crisman_d + imm + eucit_d + conoth + gender + age_class + edu + inc + polpos + gni + wsdiff + crisman_d*conoth + crisman_d*gni + crisman_d*wsdiff, 
+                            weights = dfi[[i]]$PESO_TOT, 
+                            data=dfi[[i]], 
+                            family="binomial",
+                            cluster=dfi[[i]]$country) 
+  mar_cl <- with(model_marg, margins(glm_res, vcov=vcov, data=subset(df,wsdiff<=64.6)))
+  AME <- cbind(AME, summary(mar_cl)[,2])
+  SE <- cbind(SE, summary(mar_cl)[,3])
+}
+
+mame <- apply(AME, 1, mean)
+mse <- apply(SE, 1, mean)
+margin <- as.data.frame(cbind(mame,mse))
 
 ## calculate ordinal regression as robustness test ----
 df_ord <- filter(df, fiscsol!="Don't know")

@@ -286,7 +286,7 @@ mergfr <- left_join(dffr, regfr, by="qmktsize_5_1")
 ## Italy ----
 #loading the csv file with the NUTS3 data for Italy
 regit <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20210930_GrenzregionenIT.csv", sep=";")
-regit <- rename(regit, qmktsize_7_1=ï..ISTAT)
+regit <- rename(regit, qmktsize_7_1=ISTAT)
 regit <- rename(regit, NUTS_ID=NUTS3)
 regit$qmktsize_7_1 <- substr(regit$qmktsize_7_1,2, nchar(regit$qmktsize_7_1)) #because of the specific format of these regional codes I had to come up with this
 
@@ -299,7 +299,7 @@ mergit <- left_join(dfit, regit, by="qmktsize_7_1")
 ## Finland ----
 #loading csv file, adjusting the data a bit
 regfi <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20210930_GrenzregionenFI.csv", sep=";")
-regfi <- rename(regfi, NUTS_ID=ï..NUTS_ID)
+regfi <- rename(regfi, NUTS_ID=NUTS_ID)
 
 # country-level copy of df for Finland
 dffi <- filter(df, country=="Finland")
@@ -310,7 +310,7 @@ mergfi <- left_join(dffi, regfi, by="qmktsize_7_1")
 ## Hungary ----
 #loading csv file, adjusting the data a bit
 reghu <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20210930_GrenzregionenHU.csv", sep=";")
-reghu <- rename(reghu, NUTS_ID=ï..NUTS_ID)
+reghu <- rename(reghu, NUTS_ID=NUTS_ID)
 
 #country-level copy of df for Hungary
 dfhu <- filter(df, country=="Hungary")
@@ -321,7 +321,7 @@ merghu <- left_join(dfhu, reghu, by="qmktsize_7_1")
 
 ## Greece ----
 reggr <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20210929_GrenzregionenGR.csv", sep=";")
-reggr <- rename(reggr, qmktsize_7_1 = ï..qmktsize_7_1)
+reggr <- rename(reggr, qmktsize_7_1 = qmktsize_7_1)
 
 # country-level copy of df for Greece
 dfgr <- filter(df, country=="Greece")
@@ -332,7 +332,7 @@ merggr <- left_join(dfgr, reggr, by="qmktsize_7_1")
 ## Sweden ----
 #load csv
 regse <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20210930_GrenzregionenSE.csv", sep=";")
-regse <- rename(regse, qmktsize_6_1 = ï..qmktsize_6_1)
+regse <- rename(regse, qmktsize_6_1 = qmktsize_6_1)
 
 #country-level copy
 dfse <- filter(df, country=="Sweden")
@@ -343,7 +343,7 @@ mergse <- left_join(dfse, regse, by="qmktsize_6_1")
 ## Netherlands ----
 #load csv
 regnl <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20211007_GrenzregionenNL.csv", sep=";")
-regnl <- rename(regnl, qmktsize_7_1 = ï..qmktsize_7_1)
+regnl <- rename(regnl, qmktsize_7_1 = qmktsize_7_1)
 regnl$qmktsize_7_1 <- as.character(regnl$qmktsize_7_1)
 
 #country-level copy
@@ -355,7 +355,7 @@ mergnl <- left_join(dfnl,regnl, by="qmktsize_7_1")
 ## Poland ----
 #load csv
 regpl <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20211007_GrenzregionenPL.csv", sep=";")
-regpl <- rename(regpl, NUTS_ID = ï..NUTS_ID)
+regpl <- rename(regpl, NUTS_ID = NUTS_ID)
 regpl$qmktsize_7_1 <- as.character(regpl$qmktsize_7_1)
 regpl$qmktsize_7_1 <- substr(regpl$qmktsize_7_1,3, nchar(regpl$qmktsize_7_1)) #because of the specific format of these regional codes I had to come up with this
 
@@ -368,7 +368,7 @@ mergpl <- left_join(dfpl, regpl, by="qmktsize_7_1")
 ## Germany ----
 #load csv
 regde <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20211010_GrenzregionenDE.csv", sep=";")
-regde <- rename(regde, NUTS_ID = ï..NUTS_ID)
+regde <- rename(regde, NUTS_ID = NUTS_ID)
 
 #country-level copy
 dfde <- filter(df, country=="Germany")
@@ -379,7 +379,7 @@ mergde <- left_join(dfde, regde, by="qmktsize_7_1")
 ## Spain ----
 #load csv
 reges <- read.csv("C:/Users/pclas/Desktop/Phd Stuff/20211010_GrenzregionenES.csv", sep=";")
-reges <- rename(reges, NUTS_ID = ï..NUTS_ID)
+reges <- rename(reges, NUTS_ID = NUTS_ID)
 reges$qmktsize_7_1 <- as.character(reges$qmktsize_7_1)
 
 #country-level copy
@@ -423,6 +423,6 @@ df["imm_dk"] <- NULL
 df["edu_y"] <- NULL
 df["age"] <- NULL
 
-save(df1, file = "data/data.rda")
+save(df, file = "data/data.rda")
 
 
